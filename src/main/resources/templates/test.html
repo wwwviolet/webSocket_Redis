@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <textarea type="text" id="input_text" style="width: 695px;height: 200px;"></textarea>
+    <button id="submit">发送</button>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $("#submit").click(function () {
+        //1.获取输入的内容
+        //使用jq获取文本域的数据
+        var data = $("#input_text").val();
+        //将要发送的数据拼接
+        var json = {"msg": data};
+        //将数据发送给/sendMsg
+        $.post("/sendMsg",json,"json");
+        //3.发送数据
+        //发送数据到服务端,由服务端转发给对应的用户
+        //将json转换为字符串进行传输
+        // ws.send(JSON.stringify(json));
+    })
+</script>
+</html>
