@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>网络聊天室</title>
-<!--    <link rel="stylesheet" type="text/css" href="../static/css/myStyle.css">-->
-<!--webSocket的客户端-->
+    <title>班级聊天室</title>
 </head>
 
 
@@ -46,11 +44,11 @@
     #right{
         background-color: #46686a;
         width: 300px;
-        height: 630px;
+        height: 640px;
         float: right;
     }
     #hyList{
-        height: 270px;
+        height: 320px;
         overflow-y: scroll;
         background: white;
     }
@@ -95,6 +93,11 @@
     <div id="left">
         <div id="content">
         </div>
+        <div>
+            <a href="chatData" target="test">
+                <button id="chatData" style="float: right ">聊天记录</button>
+            </a>
+        </div>
         <div id="input">
             <textarea type="text" id="input_text" style="width: 695px;height: 200px;"></textarea>
             <button id="submit" style="float: right;">发送</button>
@@ -105,9 +108,10 @@
         <div id="hyList">
             <h3 style="text-align: center">aa</h3>
         </div>
-        <p id="people" style="text-align: center">系统消息</p>
-        <div id="systemMessage">
+        <div>
+            <iframe src="" name="test" height="250px"></iframe>
         </div>
+
     </div>
 </div>
 </body>
@@ -115,21 +119,6 @@
 <script>
     var toName;
     var username;
-    //点击好友名称展示相关消息
-    function showChat(name){
-        toName = name;
-        //现在聊天框(渲染)
-        $("#content").html("");
-        $("#content").css("visibility","visible");
-        $("#Inchat").html("当前正与"+toName+"聊天");
-        //从sessionStorage中获取历史信息
-        var chatData = sessionStorage.getItem(toName);
-        if (chatData != null){
-            //将聊天记录渲染到聊天区
-            $("#content").html(chatData);
-        }
-    }
-    //ajax获取getUsername方法的username
     $(function () {
         $.ajax({
             url:"getUsername",
@@ -143,7 +132,6 @@
         var host = window.location.host;
         //创建webSocket对象
         var ws = new WebSocket("ws://"+host+"/chat");//资源路径,与endpoint的资源路径进行对应
-
 //为ws绑定事件
         ws.onopen = function (evt) {
             //建立连接后需要做
@@ -162,22 +150,18 @@
             if(res.system){
                 //系统消息
                 //1.好友列表展示
-                //2.系统广播的展示
                 //此处声明的变量是调试时命名的，可以直接合并
                 var names = res.message;
                 var userlistStr = "";//好友列表
-                var broadcastListStr = "";//系统广播
                 for (var name of names){
                     if (name != username){
                         //好友列表的拼接
-                        userlistStr = userlistStr + "<a style=\"text-align: center; display: block;\" onclick='showChat(\""+name+"\")'>"+name+"</a></br>";
-                        //系统消息的拼接,展示所有以上线的用户
-                        broadcastListStr += "<p style='text-align: center'>"+ name +"上线了</p>";
+                        userlistStr = userlistStr + "<a style=\"text-align: center; display: block;\">"+name+"</a></br>";
                     }
                 }
                 //渲染好友列表和系统广播(对html进行添加属性,根据ID,jq的方法)
                 $("#hyList").html(userlistStr);//展示好友列表的在线人员,并有点击事件onclick='showChat()
-                $("#xtList").html(broadcastListStr);//展示好友的上线通知
+                // $("#xtList").html(broadcastListStr);//展示好友的上线通知
 
             }else {
                 //不是系统消息
@@ -203,34 +187,6 @@
         ws.onclose = function () {
             $("#username").html("<h3 style=\"text-align: center;\">用户："+ username +"<span>-离线</span></h3>");
         }
-        // //发送消息
-        // //给id为submit的元素绑定单击事件
-        // $("#submit").click(function () {
-        //     //1.获取输入的内容
-        //     //使用jq获取文本域的数据
-        //     var data = $("#input_text").val();
-        //     //2.清空发送框
-        //     $("#input_text").val("");
-        //     //将要发送的数据拼接
-        //     var json = {"toName": toName ,"message": data};
-        //     //将数据展示在聊天区
-        //     var str = "<span id='mes_right'>"+ data +"</span></br>";
-        //     $("#content").append(str);
-        //
-        //     var chatData = sessionStorage.getItem(toName);
-        //     if (chatData != null){
-        //         //将已有的数据加上发送的数据
-        //         str = chatData + str;
-        //     }
-        //     //将数据存储到sessionStorage,如果没有记录,就把当前的记录存到sessionStorage中
-        //     sessionStorage.setItem(toName,str);
-        //     //3.发送数据
-        //     //发送数据到服务端,由服务端转发给对应的用户
-        //     //将json转换为字符串进行传输
-        //     ws.send(JSON.stringify(json));
-        // })
-        //发送消息
-        //给id为submit的元素绑定单击事件
         $("#submit").click(function () {
             //1.获取输入的内容
             //使用jq获取文本域的数据

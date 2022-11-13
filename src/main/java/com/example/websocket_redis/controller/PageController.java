@@ -22,4 +22,8 @@ public class PageController {
     public String test(){
         return "test";
     }
+    @RequestMapping("/chatData")
+    public String chatData(){
+        return "chatData";
+    }
 }

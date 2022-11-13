@@ -1,22 +1,19 @@
 package com.example.websocket_redis.ws;
 
-import com.example.websocket_redis.interceptor.UserInterceptor;
-import com.example.websocket_redis.pojo.Message;
+//import com.example.websocket_redis.interceptor.UserInterceptor;
+import com.example.websocket_redis.controller.MsgController;
 import com.example.websocket_redis.utils.MessageUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -31,9 +28,19 @@ public class ChatEndPoint implements MessageListener  {
     private Session session;
     //保存当前登录浏览器的用户,之前在HttpSession对象中存储了用户名
     private HttpSession httpSession;
-
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
+
+
+    //聊天记录数据
+//    @Autowired
+//    public static RedisTemplate<String,Object> chatData;
+//    public static List<String> chatStr = new ArrayList<>();
+
+
+
+
+
 
 
 
@@ -80,36 +87,6 @@ public class ChatEndPoint implements MessageListener  {
         }
     }
 
-    //用户之间的信息发送ws的的方法
-    //接收到客户端发送的的数据时会自动被调用
-    /*
-    @OnMessage
-    public void onWebMessage(String message,Session session){//message会接收ws传递过来的json格式转换的字符串
-        try{
-            ObjectMapper mapper = new ObjectMapper();
-            //将message转换成Message对象
-            Message mess = mapper.readValue(message, Message.class);
-            //可以通过两个对象之间的关系单独保存一份聊天记录
-            //获取接收数据的用户
-            String toName = mess.getToName();
-            //获取数据
-            String data = mess.getMessage();
-            //获取当前的客户端用户名
-            String username = (String) httpSession.getAttribute("user");
-            log.info(username + "向"+toName+"发送的消息：" + data);
-            //将数据转换成json格式传递给接收数据的用户
-            String resultMessage = MessageUtils.getMessage(false,username,data);
-            //发送数据
-            if(StringUtils.hasLength(toName)) {
-                //从map里获取指定对象进行发送
-                //在另外的客户端ws对象就会接收到该消息,不为系统消息
-                onLineUsers.get(toName).session.getBasicRemote().sendText(resultMessage);
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-     */
 
 
     //连接关闭时被调用
@@ -121,7 +98,6 @@ public class ChatEndPoint implements MessageListener  {
         //从onLineUsers中删除指定用户
         if (username != null){
             onLineUsers.remove(username);
-            UserInterceptor.onLineUsers.remove(username);
         }
         httpSession.removeAttribute("user");
         //获取推送的消息
@@ -144,8 +120,13 @@ public class ChatEndPoint implements MessageListener  {
         String[] result = JsonData.split(",");
         userName = result[0];
         msg = result[1];
+        //将聊天记录保存
+        String chatDataStr = userName+":"+msg;
+        MsgController.list.add(chatDataStr);
+//        MsgController.redisTemplate.opsForList().leftPush("chat", chatDataStr);
         msg = MessageUtils.toMessage(false,userName,msg);
         Chat(userName,msg);
+        System.out.println(userName+msg);
         log.info("收到的消息"+msg);
 
     }
@@ -165,6 +146,8 @@ public class ChatEndPoint implements MessageListener  {
             e.printStackTrace();
         }
     }
+
+
 
 
 

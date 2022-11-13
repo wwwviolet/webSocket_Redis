@@ -1,18 +1,24 @@
 package com.example.websocket_redis.controller;
 
 
-import com.example.websocket_redis.pojo.Msg;
+import com.example.websocket_redis.ws.ChatEndPoint;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class MsgController {
     @Autowired
     private RedisTemplate redisTemplate;
+
+    public static List<String> list = new ArrayList<>();
 
     @PostMapping("/sendMsg")
     public String sendMsg(String msg,String userName){
@@ -24,6 +30,18 @@ public class MsgController {
         JsonData[1] = msg;
         redisTemplate.convertAndSend("topic", JsonData);
         return "ok";
+    }
+
+    @RequestMapping("/getCharData")
+    public String chatDataSend(){
+        StringBuilder str= new StringBuilder();
+        for (String o : list){
+            str.append(o).append("\n");
+            redisTemplate.opsForList().leftPush("chat",o);
+        }
+//        list.add(chatData);
+//        httpSession.setAttribute("chatData",list);
+        return str.toString();
     }
 
 }
